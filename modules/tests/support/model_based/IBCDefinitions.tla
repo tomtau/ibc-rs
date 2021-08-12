@@ -4,23 +4,24 @@ EXTENDS Integers, FiniteSets, TLC
 
 (********************** TYPE ANNOTATIONS FOR APALACHE ************************)
 \* operator for type annotations
-a <: b == a
+\* a <: b == a
 
-ActionType == [
-    type |-> STRING,
-    chainId |-> STRING,
-    clientState |-> Int,
-    consensusState |-> Int,
-    clientId |-> Int,
-    header |-> Int,
-    previousConnectionId |-> Int,
-    counterpartyChainId |-> STRING,
-    counterpartyClientId |-> Int,
-    counterpartyConnectionId |-> Int
-]
-AsAction(a) == a <: ActionType
-AsSetAction(S) == S <: {ActionType}
-AsSetInt(S) == S <: {Int}
+\* ActionType == [
+\*     type |-> STRING,
+\*     chainId |-> STRING,
+\*     clientState |-> Int,
+\*     consensusState |-> Int,
+\*     clientId |-> Int,
+\*     header |-> Int,
+\*     previousConnectionId |-> Int,
+\*     counterpartyChainId |-> STRING,
+\*     counterpartyClientId |-> Int,
+\*     counterpartyConnectionId |-> Int,
+\*     connectionId |-> Int
+\* ]
+\* AsAction(a) == a <: ActionType
+\* AsSetAction(S) == S <: {ActionType}
+\* AsSetInt(S) == S <: {Int}
 (******************* END OF TYPE ANNOTATIONS FOR APALACHE ********************)
 
 (******************************** Utils **************************************)

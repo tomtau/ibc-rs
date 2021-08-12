@@ -14,12 +14,31 @@ ASSUME MaxClientsPerChain >= 0
 CONSTANT MaxConnectionsPerChain
 ASSUME MaxConnectionsPerChain >= 0
 
-\* mapping from chain id to its data
-VARIABLE chains
-\* last action performed
-VARIABLE action
-\* string with the outcome of the last operation
-VARIABLE actionOutcome
+VARIABLES 
+    \* mapping from chain id to its data
+    \* type: Str;
+    chains,
+
+    \* last action performed
+    (* @type: [
+        type: Str,
+        chainId: Str,
+        clientState: Int,
+        consensusState: Int,
+        clientId: Int,
+        header: Int,
+        previousConnectionId: Int,
+        counterpartyChainId: Str,
+        counterpartyClientId: Int,
+        counterpartyConnectionId: Int,
+        connectionId: Int
+    ]; *)
+    action,
+
+    \* string with the outcome of the last operation
+    \* @type: Str;
+    actionOutcome
+
 vars == <<chains, action, actionOutcome>>
 
 \* set of possible chain heights
@@ -39,7 +58,7 @@ ConnectionStates == {
 \* set of possible actions
 NoneActions == [
     type: {"None"}
-] <: {ActionType}
+]
 
 CreateClientActions == [
     type: {"Ics02CreateClient"},
@@ -48,14 +67,14 @@ CreateClientActions == [
     clientState: Heights,
     \* `consensusState` contains simply a height
     consensusState: Heights
-] <: {ActionType}
+]
 UpdateClientActions == [
     type: {"Ics02UpdateClient"},
     chainId: ChainIds,
     clientId: ClientIds,
     \* `header` contains simply a height
     header: Heights
-] <: {ActionType}
+]
 ClientActions ==
     CreateClientActions \union
     UpdateClientActions
@@ -66,7 +85,7 @@ ConnectionOpenInitActions == [
     clientId: ClientIds,
     counterpartyChainId: ChainIds,
     counterpartyClientId: ClientIds
-] <: {ActionType}
+]
 ConnectionOpenTryActions == [
     type: {"Ics03ConnectionOpenTry"},
     chainId: ChainIds,
@@ -78,7 +97,7 @@ ConnectionOpenTryActions == [
     counterpartyChainId: ChainIds,
     counterpartyClientId: ClientIds,
     counterpartyConnectionId: ConnectionIds
-] <: {ActionType}
+]
 ConnectionOpenAckActions == [
     type: {"Ics03ConnectionOpenAck"},
     chainId: ChainIds,
@@ -87,7 +106,7 @@ ConnectionOpenAckActions == [
     clientState: Heights,
     counterpartyChainId: ChainIds,
     counterpartyConnectionId: ConnectionIds
-] <: {ActionType}
+]
 ConnectionOpenConfirmActions == [
     type: {"Ics03ConnectionOpenConfirm"},
     chainId: ChainIds,
@@ -96,7 +115,7 @@ ConnectionOpenConfirmActions == [
     clientState: Heights,
     counterpartyChainId: ChainIds,
     counterpartyConnectionId: ConnectionIds
-] <: {ActionType}
+]
 ConnectionActions ==
     ConnectionOpenInitActions \union
     ConnectionOpenTryActions \union
@@ -466,7 +485,7 @@ ConnectionOpenConfirmAction(chainId) ==
 Init ==
     \* create a client and a connection with none values
     LET clientNone == [
-        heights |-> AsSetInt({})
+        heights |-> {}
     ] IN
     LET connectionNone == [
         state |-> "Uninitialized",
@@ -484,10 +503,10 @@ Init ==
         clientIdCounter |-> 0,
         connections |-> [connectionId \in ConnectionIds |-> connectionNone],
         connectionIdCounter |-> 0,
-        connectionProofs |-> AsSetAction({})
+        connectionProofs |-> {}
     ] IN
     /\ chains = [chainId \in ChainIds |-> emptyChain]
-    /\ action = AsAction([type |-> "None"])
+    /\ action = [type |-> "None"]
     /\ actionOutcome = "None"
 
 Next ==
