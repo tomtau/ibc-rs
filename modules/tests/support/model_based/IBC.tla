@@ -2,37 +2,70 @@
 
 EXTENDS ICS02, ICS03
 
-\* ids of existing chains
-CONSTANT ChainIds
-\* max height which chains can reach
-CONSTANT MaxChainHeight
-ASSUME MaxChainHeight >= 0
-\* max number of client to be created per chain
-CONSTANT MaxClientsPerChain
-ASSUME MaxClientsPerChain >= 0
-\* max number of connections to be created per chain
-CONSTANT MaxConnectionsPerChain
-ASSUME MaxConnectionsPerChain >= 0
-
-VARIABLES 
-    \* mapping from chain id to its data
-    \* type: Str;
-    chains,
-
-    \* last action performed
-    (* @type: [
+\* @typeAlias: HEIGHT = Int;
+\* @typeAlias: CLIENT = [ heights: Set(HEIGHT) ];
+(* @typeAlias: ACTION = [
         type: Str,
         chainId: Str,
-        clientState: Int,
-        consensusState: Int,
+        clientState: HEIGHT,
+        consensusState: HEIGHT,
         clientId: Int,
-        header: Int,
+        header: HEIGHT,
         previousConnectionId: Int,
         counterpartyChainId: Str,
         counterpartyClientId: Int,
         counterpartyConnectionId: Int,
         connectionId: Int
-    ]; *)
+    ];
+*)
+(* @typeAlias: CONNECTION = [
+        state: Set(Str),
+        chainId: Str,
+        clientId: Int,
+        connectionId: Int,
+        counterpartyChainId: Int,
+        counterpartyClientId: Int,
+        counterpartyConnectionId: Int
+    ];
+*)
+(* @typeAlias: CHAIN = [
+        height: Set(HEIGHT),
+        clients: Int -> CLIENT,
+        clientIdCounter: Set(Int),
+        connections: Set(CONNECTION),
+        connectionIdCounter: Set(Int),
+        connectionProofs: Set(ACTION)
+    ];
+*)
+EXTypeAliases == TRUE
+
+CONSTANTS
+    \* ids of existing chains
+    \* @type: Set(Str);
+    ChainIds,
+    \* max height which chains can reach
+    \* @type: Int;
+    MaxChainHeight,
+    \* max number of client to be created per chain
+    \* @type: Int;
+    MaxClientsPerChain,
+    \* max number of connections to be created per chain
+    \* @type: Int;
+    MaxConnectionsPerChain
+
+
+
+ASSUME MaxChainHeight >= 0
+ASSUME MaxClientsPerChain >= 0
+ASSUME MaxConnectionsPerChain >= 0
+
+VARIABLES 
+    \* mapping from chain id to its data
+    \* @type: Str -> CHAIN;
+    chains,
+
+    \* last action performed
+    \* @type: ACTION;
     action,
 
     \* string with the outcome of the last operation
