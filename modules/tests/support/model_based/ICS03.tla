@@ -3,14 +3,17 @@
 EXTENDS ICS02
 
 \* retrieves `connectionId`'s data
+\* @type: ((Int -> CONNECTION), Int) => CONNECTION;
 ICS03_GetConnection(connections, connectionId) ==
     connections[connectionId]
 
 \* check if `connectionId` exists
+\* @type: ((Int -> CONNECTION), Int) => Bool;
 ICS03_ConnectionExists(connections, connectionId) ==
     ICS03_GetConnection(connections, connectionId).state /= "Uninitialized"
 
 \* update `connectionId`'s data
+\* @type: ((Int -> CONNECTION), Int, CONNECTION) => (Int -> CONNECTION);
 ICS03_SetConnection(connections, connectionId, connection) ==
     [connections EXCEPT ![connectionId] = connection]
 

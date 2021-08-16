@@ -3,6 +3,7 @@
 EXTENDS IBCDefinitions
 
 \* retrieves `clientId`'s data
+\* @type: ((Int -> CLIENT), Int) => CLIENT;
 ICS02_GetClient(clients, clientId) ==
     clients[clientId]
 
@@ -11,6 +12,7 @@ ICS02_ClientExists(clients, clientId) ==
     ICS02_GetClient(clients, clientId).heights /= {}
 
 \* update `clientId`'s data
+\* @type: ((Int -> CLIENT), Int, CLIENT) => (Int -> CLIENT);
 ICS02_SetClient(clients, clientId, client) ==
     [clients EXCEPT ![clientId] = client]
 

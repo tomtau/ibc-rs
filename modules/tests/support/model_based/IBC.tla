@@ -32,9 +32,15 @@ EXTENDS ICS02, ICS03
         height: Set(HEIGHT),
         clients: Int -> CLIENT,
         clientIdCounter: Set(Int),
-        connections: Set(CONNECTION),
+        connections: Int -> CONNECTION,
         connectionIdCounter: Set(Int),
         connectionProofs: Set(ACTION)
+    ];
+*)
+(* @typeAlias: RESULT = [
+        clients: Int -> CLIENT,
+        action: ACTION,
+        outcome: Str
     ];
 *)
 EXTypeAliases == TRUE
@@ -233,6 +239,7 @@ Chains == [
 (***************************** Specification *********************************)
 
 \* update chain height if outcome was ok
+\* @type: (HEIGHT, RESULT, Str) => HEIGHT;
 UpdateChainHeight(height, result, okOutcome) ==
     IF result.outcome = okOutcome THEN
         height + 1
@@ -240,6 +247,7 @@ UpdateChainHeight(height, result, okOutcome) ==
         height
 
 \* update connection proofs if outcome was ok
+\* @type: (Set(ACTION), RESULT, Str) => Set(ACTION);
 UpdateConnectionProofs(connectionProofs, result, okOutcome) ==
     IF result.outcome = okOutcome THEN
         connectionProofs \union {result.action}
