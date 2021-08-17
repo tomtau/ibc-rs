@@ -522,23 +522,15 @@ impl CosmosSdkChain {
 
     fn account(&mut self) -> Result<&mut BaseAccount, Error> {
         if self.account == None {
-            let account = match self.config.address_type {
-                AddressType::Cosmos => {
-                    let account = self.block_on(query_account(self, self.key()?.account))?;
-                    debug!(
-                        sequence = %account.sequence,
-                        number = %account.account_number,
-                        "[{}] send_tx: retrieved account",
-                        self.id()
-                    );
-                    Some(account)
-                }
-                AddressType::Ethermint { .. } => {
-                    self.block_on(query_eth_account(self, self.key()?.account))?
-                        .base_account
-                }
-            };
-
+            let account = self.block_on(query_account(self, self.key()?.account))?;
+            if let Some(acc) = account.as_ref() {
+                debug!(
+                    sequence = %acc.sequence,
+                    number = %acc.account_number,
+                    "[{}] send_tx: retrieved account",
+                    self.id()
+                );
+            }
             self.account = account;
         }
 
@@ -1903,34 +1895,11 @@ async fn broadcast_tx_sync(chain: &CosmosSdkChain, data: Vec<u8>) -> Result<Resp
     Ok(response)
 }
 
-/// Uses the GRPC client to retrieve EthAccount from ethermint-compatible chain
-async fn query_eth_account(chain: &CosmosSdkChain, address: String) -> Result<EthAccount, Error> {
-    let mut client = ibc_proto::cosmos::auth::v1beta1::query_client::QueryClient::connect(
-        chain.grpc_addr.clone(),
-    )
-    .await
-    .map_err(Error::grpc_transport)?;
-
-    let request = tonic::Request::new(QueryAccountRequest { address });
-
-    let response = client.account(request).await;
-
-    let eth_account = EthAccount::decode(
-        response
-            .map_err(Error::grpc_status)?
-            .into_inner()
-            .account
-            .unwrap()
-            .value
-            .as_slice(),
-    )
-    .map_err(|e| Error::protobuf_decode("EthAccount".to_string(), e))?;
-
-    Ok(eth_account)
-}
-
 /// Uses the GRPC client to retrieve the account sequence
-async fn query_account(chain: &CosmosSdkChain, address: String) -> Result<BaseAccount, Error> {
+async fn query_account(
+    chain: &CosmosSdkChain,
+    address: String,
+) -> Result<Option<BaseAccount>, Error> {
     let mut client = ibc_proto::cosmos::auth::v1beta1::query_client::QueryClient::connect(
         chain.grpc_addr.clone(),
     )
@@ -1940,19 +1909,23 @@ async fn query_account(chain: &CosmosSdkChain, address: String) -> Result<BaseAc
     let request = tonic::Request::new(QueryAccountRequest { address });
 
     let response = client.account(request).await;
-
-    let base_account = BaseAccount::decode(
-        response
-            .map_err(Error::grpc_status)?
-            .into_inner()
-            .account
-            .unwrap()
-            .value
-            .as_slice(),
-    )
-    .map_err(|e| Error::protobuf_decode("BaseAccount".to_string(), e))?;
-
-    Ok(base_account)
+    let resp_account = response
+        .map_err(Error::grpc_status)?
+        .into_inner()
+        .account
+        .unwrap();
+    if resp_account.type_url == "/cosmos.auth.v1beta1.BaseAccount" {
+        Ok(Some(
+            BaseAccount::decode(resp_account.value.as_slice())
+                .map_err(|e| Error::protobuf_decode("BaseAccount".to_string(), e))?,
+        ))
+    } else if resp_account.type_url.ends_with(".EthAccount") {
+        Ok(EthAccount::decode(resp_account.value.as_slice())
+            .map_err(|e| Error::protobuf_decode("EthAccount".to_string(), e))?
+            .base_account)
+    } else {
+        Err(Error::unknown_account_type(resp_account.type_url))
+    }
 }
 
 fn encode_to_bech32(address: &str, account_prefix: &str) -> Result<String, Error> {
