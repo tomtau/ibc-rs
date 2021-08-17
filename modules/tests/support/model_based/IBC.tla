@@ -19,7 +19,7 @@ EXTENDS ICS02, ICS03
     ];
 *)
 (* @typeAlias: CONNECTION = [
-        state: Set(Str),
+        state: Str,
         chainId: Str,
         clientId: Int,
         connectionId: Int,
@@ -31,15 +31,16 @@ EXTENDS ICS02, ICS03
 (* @typeAlias: CHAIN = [
         height: Set(HEIGHT),
         clients: Int -> CLIENT,
-        clientIdCounter: Set(Int),
+        clientIdCounter: Int,
         connections: Int -> CONNECTION,
-        connectionIdCounter: Set(Int),
+        connectionIdCounter: Int,
         connectionProofs: Set(ACTION)
     ];
 *)
 (* @typeAlias: RESULT = [
         clients: Int -> CLIENT,
         action: ACTION,
+        clientIdCounter: Int,
         outcome: Str
     ];
 *)

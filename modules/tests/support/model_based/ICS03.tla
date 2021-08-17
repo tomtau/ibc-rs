@@ -17,6 +17,7 @@ ICS03_ConnectionExists(connections, connectionId) ==
 ICS03_SetConnection(connections, connectionId, connection) ==
     [connections EXCEPT ![connectionId] = connection]
 
+\* @type: (CHAIN, Str, Int, Str, Int) => RESULT;
 ICS03_ConnectionOpenInit(
     chain,
     chainId,

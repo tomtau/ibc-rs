@@ -16,6 +16,7 @@ ICS02_ClientExists(clients, clientId) ==
 ICS02_SetClient(clients, clientId, client) ==
     [clients EXCEPT ![clientId] = client]
 
+\* @type: (CHAIN, Str, HEIGHT) => RESULT;
 ICS02_CreateClient(chain, chainId, height) ==
     \* TODO: rename `action_` to `action` once the following issue is fixed:
     \*        https://github.com/informalsystems/apalache/issues/593
@@ -52,6 +53,7 @@ ICS02_CreateClient(chain, chainId, height) ==
             outcome |-> "Ics02CreateOk"
         ]
 
+\* @type: (CHAIN, Str, Int, Int) => RESULT;
 ICS02_UpdateClient(chain, chainId, clientId, height) ==
     LET action_ == [
         type |-> "Ics02UpdateClient",
@@ -69,7 +71,10 @@ ICS02_UpdateClient(chain, chainId, clientId, height) ==
         ]
     ELSE
         \* if the client exists, check its height
-        LET client == ICS02_GetClient(chain.clients, clientId) IN
+        LET
+            \* @type: CLIENT;
+            client == ICS02_GetClient(chain.clients, clientId)
+        IN
         LET highestHeight == Max(client.heights) IN
         IF highestHeight >= height THEN
             \* if the client's new height is not higher than the highest client
